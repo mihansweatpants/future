@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { Table, Button, Pagination } from 'semantic-ui-react'
+import { Table, Button, Pagination, Input } from 'semantic-ui-react'
 import generateKey from 'utils/generateKey'
 import TableRow from './TableRow'
 import Loader from './Loader'
@@ -10,7 +10,9 @@ class App extends Component {
     data: [],
     isLoading: false,
     activePage: 1,
-    offset: 0
+    offset: 0,
+    limit: 15,
+    search: '-'
   }
 
   fetchData = async type => {
@@ -33,30 +35,50 @@ class App extends Component {
 
   handleReset = () =>
     this.setState({
+      ...this.state,
       data: [],
       isLoading: false,
       activePage: 1,
-      offset: 0
+      offset: 0,
+      search: '-'
     })
 
   handlePageChange = (e, { activePage }) => {
+    const { limit } = this.state
     const diff = activePage - this.state.activePage
 
     if (activePage > this.state.activePage) {
       this.setState(prevState => ({
-        offset: prevState.offset + 50 * diff,
+        offset: prevState.offset + limit * diff,
         activePage: activePage
       }))
     } else {
       this.setState(prevState => ({
-        offset: prevState.offset + 50 * diff,
+        offset: prevState.offset + limit * diff,
         activePage: activePage
       }))
     }
   }
 
+  handleInputChange = e =>
+    this.setState({
+      [e.target.name]: e.target.value
+    })
+
   render() {
-    const { data, isLoading, offset, activePage } = this.state
+    const { data, isLoading, offset, activePage, limit, search } = this.state
+
+    let filteredData = this.state.data.filter(elem =>
+      Object.values(elem)
+        .slice(0, 5)
+        .some(
+          value =>
+            value
+              .toString()
+              .toLowerCase()
+              .indexOf(search.toLowerCase()) !== -1
+        )
+    )
 
     return (
       <Fragment>
@@ -73,9 +95,24 @@ class App extends Component {
 
         {data.length !== 0 && (
           <div>
-            <Button color="red" onClick={this.handleReset}>
-              Reset
-            </Button>
+            <div className="table-menu">
+              <Button
+                color="red"
+                onClick={this.handleReset}
+                className="reset btn"
+              >
+                Reset
+              </Button>
+
+              <Input
+                placeholder="Search..."
+                value={search}
+                name="search"
+                onChange={this.handleInputChange}
+                icon="search"
+              />
+            </div>
+
             <Table>
               <Table.Header>
                 <Table.Row>
@@ -88,8 +125,8 @@ class App extends Component {
               </Table.Header>
 
               <Table.Body>
-                {data
-                  .slice(offset, offset + 50)
+                {filteredData
+                  .slice(offset, offset + limit)
                   .map(person => (
                     <TableRow
                       key={generateKey()}
@@ -108,7 +145,7 @@ class App extends Component {
                     <Pagination
                       activePage={activePage}
                       onPageChange={this.handlePageChange}
-                      totalPages={data.length / 50}
+                      totalPages={Math.ceil(filteredData.length / limit)}
                     />
                   </Table.HeaderCell>
                 </Table.Row>

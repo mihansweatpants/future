@@ -6,3 +6,12 @@ tr:hover {
   background: rgba(0, 0, 0, 0.1);
   cursor: pointer;
 }
+
+.reset {
+  display: block !important;
+  margin-bottom: 1em !important;
+}
+
+.apply {
+  margin-left: 1em !important;
+}
