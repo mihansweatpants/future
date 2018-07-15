@@ -1,0 +1,8 @@
+body {
+  padding: 3em;
+}
+
+tr:hover {
+  background: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
