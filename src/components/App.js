@@ -12,7 +12,7 @@ class App extends Component {
     activePage: 1,
     offset: 0,
     limit: 15,
-    search: '-',
+    search: '',
     personCard: null
   }
 
@@ -40,7 +40,7 @@ class App extends Component {
       isLoading: false,
       activePage: 1,
       offset: 0,
-      search: '-',
+      search: '',
       personCard: null
     })
 
@@ -64,7 +64,9 @@ class App extends Component {
   handleInputChange = e =>
     this.setState({
       [e.target.name]: e.target.value,
-      personCard: null
+      personCard: null,
+      offset: 0,
+      activePage: 1
     })
 
   displayPersonCard = person =>
@@ -102,9 +104,11 @@ class App extends Component {
         {data.length === 0 && (
           <div>
             <Button onClick={() => this.fetchData('small')}>
-              Load small data
+              Load small dataset
             </Button>
-            <Button onClick={() => this.fetchData('big')}>Load big data</Button>
+            <Button onClick={() => this.fetchData('big')}>
+              Load bigger dataset
+            </Button>
           </div>
         )}
 
