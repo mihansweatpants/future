@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import { Table, Button, Pagination, Input } from 'semantic-ui-react'
 import generateKey from 'utils/generateKey'
-import TableRow from './TableRow'
 import Loader from './Loader'
+import PersonCard from './PersonCard'
 import { smallDataURL, bigDataURL } from '../constants'
 
 class App extends Component {
@@ -12,7 +12,8 @@ class App extends Component {
     activePage: 1,
     offset: 0,
     limit: 15,
-    search: '-'
+    search: '-',
+    personCard: null
   }
 
   fetchData = async type => {
@@ -35,12 +36,12 @@ class App extends Component {
 
   handleReset = () =>
     this.setState({
-      ...this.state,
       data: [],
       isLoading: false,
       activePage: 1,
       offset: 0,
-      search: '-'
+      search: '-',
+      personCard: null
     })
 
   handlePageChange = (e, { activePage }) => {
@@ -62,11 +63,25 @@ class App extends Component {
 
   handleInputChange = e =>
     this.setState({
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
+      personCard: null
+    })
+
+  displayPersonCard = person =>
+    this.setState({
+      personCard: person
     })
 
   render() {
-    const { data, isLoading, offset, activePage, limit, search } = this.state
+    const {
+      data,
+      isLoading,
+      offset,
+      activePage,
+      limit,
+      search,
+      personCard
+    } = this.state
 
     let filteredData = this.state.data.filter(elem =>
       Object.values(elem)
@@ -125,18 +140,18 @@ class App extends Component {
               </Table.Header>
 
               <Table.Body>
-                {filteredData
-                  .slice(offset, offset + limit)
-                  .map(person => (
-                    <TableRow
-                      key={generateKey()}
-                      id={person.id}
-                      firstName={person.firstName}
-                      lastName={person.lastName}
-                      email={person.email}
-                      phone={person.phone}
-                    />
-                  ))}
+                {filteredData.slice(offset, offset + limit).map(person => (
+                  <Table.Row
+                    key={generateKey()}
+                    onClick={() => this.displayPersonCard(person)}
+                  >
+                    <Table.Cell>{person.id}</Table.Cell>
+                    <Table.Cell>{person.firstName}</Table.Cell>
+                    <Table.Cell>{person.lastName}</Table.Cell>
+                    <Table.Cell>{person.email}</Table.Cell>
+                    <Table.Cell>{person.phone}</Table.Cell>
+                  </Table.Row>
+                ))}
               </Table.Body>
 
               <Table.Footer>
@@ -151,6 +166,8 @@ class App extends Component {
                 </Table.Row>
               </Table.Footer>
             </Table>
+
+            {personCard && <PersonCard {...personCard} />}
           </div>
         )}
       </Fragment>
