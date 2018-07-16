@@ -11,3 +11,12 @@ tr:hover {
   display: block !important;
   margin-bottom: 1em !important;
 }
+
+.err-msg {
+  margin-bottom: 1em;
+}
+
+.err-msg h2 {
+  color: #ff0033;
+  margin-bottom: 0;
+}

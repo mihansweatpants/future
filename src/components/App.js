@@ -9,15 +9,18 @@ class App extends Component {
   state = {
     data: [],
     isLoading: false,
-    activePage: 1,
-    offset: 0,
     limit: 15,
-    search: '',
-    personCard: null
+    offset: 0,
+    activePage: 1,
+    search: '-',
+    activeColumn: null,
+    sortDirection: null,
+    personCard: null,
+    error: null
   }
 
-  fetchData = async type => {
-    this.setState({ isLoading: true })
+  fetchData = type => async () => {
+    this.setState({ isLoading: true, error: null })
 
     let url
     if (type === 'small') url = smallDataURL
@@ -28,7 +31,7 @@ class App extends Component {
       const data = await res.json()
       this.setState({ data })
     } catch (err) {
-      console.log(err)
+      this.setState({ error: err.message })
     }
 
     this.setState({ isLoading: false })
@@ -38,10 +41,14 @@ class App extends Component {
     this.setState({
       data: [],
       isLoading: false,
-      activePage: 1,
+      limit: 15,
       offset: 0,
-      search: '',
-      personCard: null
+      activePage: 1,
+      search: '-',
+      activeColumn: null,
+      sortDirection: null,
+      personCard: null,
+      error: null
     })
 
   handlePageChange = (e, { activePage }) => {
@@ -69,7 +76,34 @@ class App extends Component {
       activePage: 1
     })
 
-  displayPersonCard = person =>
+  handleSort = selectedColumn => () => {
+    const { activeColumn, data, sortDirection } = this.state
+
+    if (activeColumn !== selectedColumn) {
+      this.setState({
+        activeColumn: selectedColumn,
+        data: data.sort((a, b) => {
+          if (a[selectedColumn] < b[selectedColumn]) return -1
+          if (a[selectedColumn] > b[selectedColumn]) return 1
+          return 0
+        }),
+        sortDirection: 'ascending',
+        offset: 0,
+        activePage: 1
+      })
+
+      return
+    }
+
+    this.setState({
+      data: data.reverse(),
+      sortDirection: sortDirection === 'ascending' ? 'descending' : 'ascending',
+      offset: 0,
+      activePage: 1
+    })
+  }
+
+  displayPersonCard = person => () =>
     this.setState({
       personCard: person
     })
@@ -82,7 +116,10 @@ class App extends Component {
       activePage,
       limit,
       search,
-      personCard
+      personCard,
+      activeColumn,
+      sortDirection,
+      error
     } = this.state
 
     let filteredData = this.state.data.filter(elem =>
@@ -99,16 +136,21 @@ class App extends Component {
 
     return (
       <Fragment>
+        {error && (
+          <div className="err-msg">
+            <h2>{error}</h2>
+            <p>Something went wrong while fetching data</p>
+          </div>
+        )}
+
         {isLoading && <Loader />}
 
         {data.length === 0 && (
           <div>
-            <Button onClick={() => this.fetchData('small')}>
+            <Button onClick={this.fetchData('small')}>
               Load small dataset
             </Button>
-            <Button onClick={() => this.fetchData('big')}>
-              Load bigger dataset
-            </Button>
+            <Button onClick={this.fetchData('big')}>Load bigger dataset</Button>
           </div>
         )}
 
@@ -132,14 +174,39 @@ class App extends Component {
               />
             </div>
 
-            <Table>
+            <Table sortable>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>Id</Table.HeaderCell>
-                  <Table.HeaderCell>First Name</Table.HeaderCell>
-                  <Table.HeaderCell>Last Name</Table.HeaderCell>
-                  <Table.HeaderCell>Email</Table.HeaderCell>
-                  <Table.HeaderCell>Phone</Table.HeaderCell>
+                  <Table.HeaderCell
+                    sorted={activeColumn === 'id' ? sortDirection : null}
+                    onClick={this.handleSort('id')}
+                  >
+                    Id
+                  </Table.HeaderCell>
+                  <Table.HeaderCell
+                    sorted={activeColumn === 'firstName' ? sortDirection : null}
+                    onClick={this.handleSort('firstName')}
+                  >
+                    First Name
+                  </Table.HeaderCell>
+                  <Table.HeaderCell
+                    sorted={activeColumn === 'lastName' ? sortDirection : null}
+                    onClick={this.handleSort('lastName')}
+                  >
+                    Last Name
+                  </Table.HeaderCell>
+                  <Table.HeaderCell
+                    sorted={activeColumn === 'email' ? sortDirection : null}
+                    onClick={this.handleSort('email')}
+                  >
+                    Email
+                  </Table.HeaderCell>
+                  <Table.HeaderCell
+                    sorted={activeColumn === 'phone' ? sortDirection : null}
+                    onClick={this.handleSort('phone')}
+                  >
+                    Phone
+                  </Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
 
@@ -147,7 +214,7 @@ class App extends Component {
                 {filteredData.slice(offset, offset + limit).map(person => (
                   <Table.Row
                     key={generateKey()}
-                    onClick={() => this.displayPersonCard(person)}
+                    onClick={this.displayPersonCard(person)}
                   >
                     <Table.Cell>{person.id}</Table.Cell>
                     <Table.Cell>{person.firstName}</Table.Cell>
