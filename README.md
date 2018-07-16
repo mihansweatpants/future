@@ -1,5 +1,6 @@
 ## Задание
 
+https://github.com/fugr-ru/frontend-javascript-test<br>
 Разработать React-приложение для отображения таблицы с данными.
 
 ### Функционал
